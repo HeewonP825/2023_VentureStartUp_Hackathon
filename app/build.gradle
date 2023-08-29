@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace 'com.hackathon.gameselect'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.hackathon.gameselect"
