@@ -16,7 +16,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="안녕하세요,"
         android:textColor="@color/black"
-        android:textSize="35sp"
+        android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -29,7 +29,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="게임 추천을 시작할게요"
         android:textColor="@color/black"
-        android:textSize="35sp"
+        android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView" />
 
@@ -42,7 +42,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="000"
         android:textColor="@color/black"
-        android:textSize="25sp"
+        android:textSize="23sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView2" />
 
@@ -55,7 +55,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="님에게"
         android:textColor="@color/black"
-        android:textSize="25sp"
+        android:textSize="23sp"
         app:layout_constraintStart_toEndOf="@+id/username"
         app:layout_constraintTop_toTopOf="@+id/textView2" />
 
@@ -68,7 +68,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="가장 잘 맞는 게임은"
         android:textColor="@color/black"
-        android:textSize="25sp"
+        android:textSize="23sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView3" />
 
@@ -101,13 +101,14 @@
         android:id="@+id/game_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="게임이름"
         android:textColor="@color/black"
         android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@+id/view"
-        tools:layout_editor_absoluteX="64dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view" />
 
 <!--    <TextView-->
 <!--        android:layout_width="wrap_content"-->

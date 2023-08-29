@@ -16,7 +16,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="안녕하세요,"
         android:textColor="@color/black"
-        android:textSize="35sp"
+        android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -29,7 +29,7 @@
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="게임 추천을 시작할게요"
         android:textColor="@color/black"
-        android:textSize="35sp"
+        android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView" />
 
