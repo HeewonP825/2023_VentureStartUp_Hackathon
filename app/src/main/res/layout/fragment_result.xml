@@ -54,7 +54,7 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="80dp"
                 android:fontFamily="@font/noto_sans_kr_bold"
-                android:text="000"
+                android:text="사용자"
                 android:textColor="@color/black"
                 android:textSize="23sp"
                 app:layout_constraintStart_toStartOf="parent"
