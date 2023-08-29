@@ -34,6 +34,9 @@ android {
     buildFeatures {
         viewBinding true
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
 }
 
 dependencies {
@@ -54,4 +57,15 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
+    implementation 'com.google.http-client:google-http-client-android:1.38.1'
+    implementation 'com.google.api-client:google-api-client-android:1.31.2'
+    implementation 'com.google.api-client:google-api-client-gson:1.31.2'
+
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
+
 }

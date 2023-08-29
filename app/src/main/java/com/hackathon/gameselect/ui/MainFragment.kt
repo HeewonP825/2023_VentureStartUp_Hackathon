@@ -12,6 +12,17 @@ import com.hackathon.gameselect.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
+    // TODO: Rename and change types of parameters
+    var param1: String? = null
+    var param2: String? = null
+
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        arguments?.let {
+//            param1 = it.getString(ARG_PARAM1)
+//            param2 = it.getString(ARG_PARAM2)
+//        }
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

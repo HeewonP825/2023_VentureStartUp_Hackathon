@@ -1,25 +1,22 @@
 package com.hackathon.gameselect
-import android.accounts.Account
+
 import android.accounts.AccountManager
-import android.accounts.AccountManagerCallback
-import android.accounts.AccountManagerFuture
-import android.app.Activity
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.os.Message
 import android.util.Log
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.Scope
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -28,16 +25,17 @@ import com.hackathon.gameselect.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 class MainActivity : AppCompatActivity() {
 
-    private val AUTH_SCOPE = "https://www.googleapis.com/auth/youtube" // 사용자 인증 스코프
-    private lateinit var accountManager: AccountManager
     private lateinit var binding: ActivityMainBinding
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleLoginLauncher: ActivityResultLauncher<Intent>
+    private lateinit var googleApiClient: GoogleApiClient
 
-    //firebase
+    // Firebase
     private lateinit var launcher: ActivityResultLauncher<Intent>
     private lateinit var firebaseAuth: FirebaseAuth
 
@@ -46,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -54,36 +51,28 @@ class MainActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
         launcher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult(), ActivityResultCallback { result ->
-                Log.e(TAG, "resultCode : ${result.resultCode}")
-                Log.e(TAG, "result : $result")
                 if (result.resultCode == RESULT_OK) {
                     val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                     try {
-                        task.getResult(ApiException::class.java)?.let { account ->
-                            tokenId = account.idToken
-                            if (tokenId != null && tokenId != "") {
-                                val credential: AuthCredential = GoogleAuthProvider.getCredential(account.idToken, null)
-                                firebaseAuth.signInWithCredential(credential)
-                                    .addOnCompleteListener {
-                                        if (firebaseAuth.currentUser != null) {
-                                            val user: FirebaseUser = firebaseAuth.currentUser!!
-                                            email = user.email.toString()
-                                            Log.e(TAG, "email : $email")
-                                            val googleSignInToken = account.idToken ?: ""
-                                            if (googleSignInToken != "") {
-                                                Log.e(TAG, "googleSignInToken : $googleSignInToken")
-                                            } else {
-                                                Log.e(TAG, "googleSignInToken이 null")
-                                            }
-                                        }
-                                    }
-                            }
-                        } ?: throw Exception()
-                    }   catch (e: Exception) {
+                        val account = task.getResult(ApiException::class.java)
+                        account?.let { handleGoogleSignInResult(account) }
+                    } catch (e: Exception) {
                         e.printStackTrace()
                     }
                 }
             })
+
+        // GoogleSignInOptions 설정
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        // GoogleApiClient 생성
+        googleApiClient = GoogleApiClient.Builder(this)
+            .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+            .build()
 
         binding.googleLoginBtn.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
@@ -91,80 +80,86 @@ class MainActivity : AppCompatActivity() {
                     .requestIdToken(getString(R.string.default_web_client_id))
                     .requestEmail()
                     .build()
-                val googleSignInClient = GoogleSignIn.getClient(this@MainActivity, gso)
+                googleSignInClient = GoogleSignIn.getClient(this@MainActivity, gso)
                 val signInIntent: Intent = googleSignInClient.signInIntent
                 launcher.launch(signInIntent)
             }
+//            val signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient)
+//            startActivityForResult(signInIntent, RC_SIGN_IN)
+
         }
 
         binding.sendDataBtn.setOnClickListener {
 
-            accountManager = AccountManager.get(this)
+        }
+    }
+    // onActivityResult 함수에서 사용자 정보 및 토큰을 처리
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-            // 실제 사용할 Account 객체를 얻어와서 myAccount에 할당
-            val myAccount = getMyAccount()
-            Log.e("", "${myAccount}")
-            myAccount?.let {
-                getAuthToken(it)
+        if (requestCode == RC_SIGN_IN) {
+            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data!!)
+            if (result!!.isSuccess) {
+                // 인증 성공
+                val account = result.signInAccount
+                val idToken = account?.idToken // 사용할 ID Token
+                getSubscriptions(idToken)
+
+            } else {
+                val errorMessage = result.status.statusMessage
+                Log.e("실패", "구글 로그인 실패: $errorMessage")
+                // 인증 실패
             }
         }
     }
+    fun getSubscriptions(token: String?) {
 
-    override fun onResume() {
-        super.onResume()
-    }
+        val apiKey = token
+        val apiManager = YouTubeApiManager(apiKey!!)
 
-    override fun onStart() {
-        super.onStart()
-    }
-    private fun getMyAccount(): Account? {
+        apiManager.getSubscriptions(object : Callback<SubscriptionResponse> {
+            override fun onResponse(call: Call<SubscriptionResponse>, response: Response<SubscriptionResponse>) {
+                Log.e("response", "${response}")
 
-        val accounts = accountManager.getAccountsByType("com.google")
-        return if (accounts.isNotEmpty()) {
-            accounts[0]
-        } else {
-            null
-        }
-    }
+                if (response.isSuccessful) {
+                    val subscriptions = response.body()?.items
+                    Log.e("subscriptions", "${subscriptions}")
+                    // 구독 리스트를 사용하여 UI 업데이트
+                } else {
+                    Log.e("실패", "")
 
-    private fun getAuthToken(account: Account) {
-        val options = Bundle()
-
-        accountManager.getAuthToken(
-            account,
-            AUTH_SCOPE,
-            options,
-            this,
-            OnTokenAcquired(),
-            handler
-        )
-    }
-
-    private inner class OnTokenAcquired : AccountManagerCallback<Bundle> {
-        override fun run(future: AccountManagerFuture<Bundle>) {
-            try {
-                val bundle = future.result
-                val authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN)
-                // authToken을 이용하여 필요한 작업 수행
-            } catch (e: Exception) {
-                e.printStackTrace()
+                    // API 요청이 실패한 경우 처리
+                }
             }
+
+            override fun onFailure(call: Call<SubscriptionResponse>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+        }, apiKey)
+    }
+
+    private fun handleGoogleSignInResult(account: GoogleSignInAccount) {
+        tokenId = account.idToken
+        if (tokenId != null && tokenId != "") {
+            val credential: AuthCredential = GoogleAuthProvider.getCredential(account.idToken, null)
+            firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener { authTask ->
+                    if (authTask.isSuccessful) {
+                        val user: FirebaseUser? = firebaseAuth.currentUser
+                        user?.let {
+                            email = user.email ?: ""
+                            Log.e("email", "email : $email")
+                            Log.e(TAG, "googleSignInToken : $tokenId")
+                        }
+                    }
+                }
         }
     }
 
-    private inner class OnError : AccountManagerCallback<Bundle> {
-        override fun run(future: AccountManagerFuture<Bundle>) {
-            // 에러 처리를 여기에 구현
-        }
-    }
 
-    inner class ErrorHandler : Handler.Callback {
-        override fun handleMessage(msg: Message): Boolean {
-            // 에러 처리를 여기에 구현
-            return true
-        }
-    }
-    val errorHandler = ErrorHandler()
-    val handler = Handler(errorHandler)
+    companion object {
+        private const val TAG = "MainActivity"
+        private const val RC_SIGN_IN = 9001
 
+    }
 }

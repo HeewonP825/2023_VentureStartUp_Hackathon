@@ -6,7 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/Main_Fragment">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+    </ScrollView>
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
@@ -99,14 +103,14 @@
 
     <TextView
         android:id="@+id/game_name"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/noto_sans_kr_bold"
         android:text="게임이름"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/view" />
 
@@ -254,14 +258,14 @@
 
     <TextView
         android:id="@+id/commentTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/noto_sans_kr_regular"
         android:text="게임 추천 이유"
         android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textSize="15dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/view2" />
 
